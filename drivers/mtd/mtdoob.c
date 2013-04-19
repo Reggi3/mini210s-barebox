@@ -78,7 +78,10 @@ static int add_mtdoob_device(struct mtd_info *mtd, char *devname, void **priv)
 
 	mtdoob = xzalloc(sizeof(*mtdoob));
 	mtdoob->cdev.ops = &mtd_ops_oob;
-	mtdoob->cdev.size = (mtd->size / mtd->writesize) * mtd->oobsize;
+//  Reggie, changed to cope with nand chips > 2GB, apparently C doesn't appreciate dividing
+//  64bit values by 32bit values!
+//	mtdoob->cdev.size = (mtd->size / mtd->writesize) * mtd->oobsize;
+	mtdoob->cdev.size = (__div64_32(&mtd->size, mtd->writesize)) * mtd->oobsize;
 	mtdoob->cdev.name = asprintf("%s_oob%d", devname, mtd->class_dev.id);
 	mtdoob->cdev.priv = mtdoob;
 	mtdoob->cdev.dev = &mtd->class_dev;

@@ -36,7 +36,8 @@
 #include "mtd.h"
 
 /* Must be a multiple of the largest NAND page size */
-#define RAW_WRITEBUF_SIZE	4096
+// Reggie updated for 8K pages
+#define RAW_WRITEBUF_SIZE	8192
 
 /**
  * mtdraw - mtdraw device private data
@@ -291,7 +292,9 @@ static int add_mtdraw_device(struct mtd_info *mtd, char *devname, void **priv)
 	mtdraw->mtd = mtd;
 
 	mtdraw->cdev.ops = (struct file_operations *)&mtd_raw_fops;
-	mtdraw->cdev.size = mtd->size / mtd->writesize *
+	// Reggie, changed to cope with nand chips > 2GB
+  //	mtdraw->cdev.size = mtd->size / mtd->writesize *
+	mtdraw->cdev.size = (__div64_32(&mtd->size, mtd->writesize)) *
 		(mtd->writesize + mtd->oobsize);
 	mtdraw->cdev.name = asprintf("%sraw%d", devname, mtd->class_dev.id);
 	mtdraw->cdev.priv = mtdraw;

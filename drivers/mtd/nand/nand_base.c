@@ -1208,8 +1208,8 @@ static struct nand_flash_dev *nand_get_flash_type(struct mtd_info *mtd,
 
 	if (!mtd->name)
 		mtd->name = type->name;
-
-	chip->chipsize = type->chipsize << 20;
+// Reggie, type->chipsize needs casting to 64bit for nand chips > 2GB
+	chip->chipsize = (uint64_t)type->chipsize << 20;
 
 	if (!type->pagesize) {
 		int extid;
@@ -1226,10 +1226,24 @@ static struct nand_flash_dev *nand_get_flash_type(struct mtd_info *mtd,
 		 * Check for wraparound + Samsung ID + nonzero 6th byte
 		 * to decide what to do.
 		 */
+		 
+
 		if (id_data[0] == id_data[6] && id_data[1] == id_data[7] &&
 				id_data[0] == NAND_MFR_SAMSUNG &&
 				(chip->cellinfo & NAND_CI_CELLTYPE_MSK) &&
 				id_data[5] != 0x00) {
+// Reggie, added better method to catch all known oob sizes				
+			int __oobsz[] = { 0, 128, 218, 400, 436, 512, 640, 0 };
+			/* Calc pagesize */
+			mtd->writesize = 2048 << (extid & 0x03);
+			extid >>= 2;
+			/* Calc oobsize */
+			if (extid & 0x10) {
+				mtd->oobsize = __oobsz[4 + (extid & 0x3)];
+			} else {
+				mtd->oobsize = __oobsz[(extid & 0x3)];
+			}				
+#if 0				
 			/* Calc pagesize */
 			mtd->writesize = 2048 << (extid & 0x03);
 			extid >>= 2;
@@ -1248,6 +1262,7 @@ static struct nand_flash_dev *nand_get_flash_type(struct mtd_info *mtd,
 				mtd->oobsize = 436;
 				break;
 			}
+#endif
 			extid >>= 2;
 			/* Calc blocksize */
 			mtd->erasesize = (128 * 1024) <<

@@ -16,4 +16,6 @@ obj-$(CONFIG_NAND_OMAP_GPMC)		+= nand_omap_gpmc.o nand_omap_bch_decoder.o
 obj-$(CONFIG_NAND_ATMEL)		+= atmel_nand.o
 obj-$(CONFIG_NAND_S3C24XX)		+= nand_s3c24xx.o
 pbl-$(CONFIG_NAND_S3C24XX)		+= nand_s3c24xx.o
+obj-$(CONFIG_NAND_S5PV210)		+= s5p_nand_mlc.o
+pbl-$(CONFIG_NAND_S5PV210)		+= s5p_nand_mlc.o
 obj-$(CONFIG_NAND_MXS)			+= nand_mxs.o

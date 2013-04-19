@@ -104,6 +104,13 @@ static int mini210s_console_init(void)
 }
 console_initcall(mini210s_console_init);
 
+static void mini210s_nand_init(void){
+
+        add_generic_device("s5p_nand", DEVICE_ID_DYNAMIC, NULL,
+                         S3C_NAND_BASE, 0x40000, IORESOURCE_MEM, NULL);
+
+}
+
 static void mini210s_eth_init(void)
 {
 	uint32_t reg;
@@ -125,19 +132,25 @@ static void mini210s_eth_init(void)
 			IORESOURCE_MEM_16BIT, &dm9000_data);
 }
 
-static int mini210s_devices_init(void)
-{
-	int i;
-	for (i = 0; i < ARRAY_SIZE(pin_usage); i++)
-		s3c_gpio_mode(pin_usage[i]);
-
+static void mini210s_led_init(void){
+  int i;
 	for (i = 0; i < ARRAY_SIZE(leds); i++) {
 		leds[i].active_low = 1;
 		gpio_direction_output(leds[i].gpio, leds[i].active_low);
 		led_gpio_register(&leds[i]);
 	}
+}
 
+static int mini210s_devices_init(void)
+{
+	int i;
+	for (i = 0; i < ARRAY_SIZE(pin_usage); i++) 
+    s3c_gpio_mode(pin_usage[i]);
+
+
+  mini210s_nand_init(); // needs fleshing out with a platform_data struct 
 	mini210s_eth_init();
+  mini210s_led_init(); // lets get everything setup before we turn on the shiny shiny
 	armlinux_set_bootparams((void*)S3C_SDRAM_BASE + 0x100);
 	armlinux_set_architecture(MACH_TYPE_MINI210);
 
